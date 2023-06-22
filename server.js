@@ -22,18 +22,35 @@ const domains = ['placecage', 'fillmurray', 'stevensegallery']
 const imageExts = ['gif', 'jpg', 'jpeg', 'png']
 
 const sourceImagePath = path.join(__dirname, 'images', 'source')
+const generatedImagePath = path.join(__dirname, 'images', 'generated')
 const standardImages = domains.reduce((images, domain) => {
   const files = fs.readdirSync(path.join(sourceImagePath, domain))
   images[domain] = files.filter((file) => imageExts.includes(path.extname(file).replace(/^\./, '')))
   return images
 }, {})
+const crazyImages = fs.readdirSync(path.join(sourceImagePath, 'placecage', 'crazy')).filter((file) => imageExts.includes(path.extname(file).replace(/^\./, '')))
+const gifImages = fs.readdirSync(path.join(sourceImagePath, 'placecage', 'gifs')).filter((file) => imageExts.includes(path.extname(file).replace(/^\./, '')))
 
 const randomImageFrom = (domain) => {
   return standardImages[domain][~~(Math.random() * standardImages[domain].length)]
 }
 
-const getImagePath = ({ domain = 'placecage', width, height, grayscale = false, crazy = false } = {}) => {
-  return path.join(sourceImagePath, domain, randomImageFrom(domain, ''))
+const randomCrazyImage = () => {
+  return crazyImages[~~(Math.random() * crazyImages.length)]
+}
+const randomGifImage = () => {
+  return gifImages[~~(Math.random() * gifImages.length)]
+}
+
+const getImagePath = ({ domain = 'placecage', gif = false, grayscale = false, crazy = false } = {}) => {
+  const parts = [sourceImagePath, domain]
+  if (gif) {
+    return path.join(...parts, 'gifs', randomGifImage())
+  }
+  if (crazy) {
+    return path.join(...parts, 'crazy', randomCrazyImage())
+  }
+  return path.join(...parts, randomImageFrom(domain, ''))
 }
 
 const serveIndexFor = (domain, res) => {
@@ -85,23 +102,26 @@ const server = http.createServer((req, res) => {
 
   const img = getImagePath({...opts, width, height: height || width})
 
+  if (/gif$/.test(img)) {
+    res.writeHead(200, { 'Content-Type': 'image/gif' })
+    res.end(fs.readFileSync(img))
+    return
+  }
   jimp.read(fs.readFileSync(img), (err, blob) => {
     if (err) {
       res.writeHead(500)
       res.end(err)
     }
     if (width) {
-      blob.cover(+width, +height || +width).getBufferAsync(jimp.MIME_JPEG).then((file) => {
-        res.writeHead(200, { 'Content-Type': 'image/jpeg' })
-        res.end(file)
-      })
+      blob.cover(+width, +height || +width)
     }
-    else {
-      blob.getBufferAsync(jimp.MIME_JPEG).then((file) => {
-        res.writeHead(200, { 'Content-Type': 'image/jpeg' })
-        res.end(file)
-      })
+    if (opts.grayscale) {
+      blob.color([{ apply: 'greyscale', params: [0] }])
     }
+    blob.getBufferAsync(jimp.MIME_JPEG).then((file) => {
+      res.writeHead(200, { 'Content-Type': 'image/jpeg' })
+      res.end(file)
+    })
   })
 })
 
