@@ -6,6 +6,9 @@
   "author": "Shane Riley",
   "license": "UNLICENSED",
   "private": true,
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js"
