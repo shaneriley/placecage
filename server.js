@@ -49,8 +49,12 @@ const serveStylesheet = (res) => {
 }
 
 const server = http.createServer((req, res) => {
+  console.log(`[HTTP GET]: ${req.url}`)
   if (/\.css$/.test(req.url)) {
     return serveStylesheet(res)
+  }
+  if (req.url === '/') {
+    return serveIndexFor('placecage', res)
   }
   const urlParts = req.url.replace(/^\//, '').split('/')
   const opts = {
