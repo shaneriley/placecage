@@ -102,4 +102,4 @@ const server = http.createServer((req, res) => {
 })
 
 console.log(`Server listening on port ${process.env.PORT}`)
-server.listen(process.env.PORT)
+server.listen(process.env.PORT || 80)
