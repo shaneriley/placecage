@@ -1,0 +1,21 @@
+{
+  "name": "placecage",
+  "version": "1.0.0",
+  "description": "Reproduction of Placecage Ruby app in Node",
+  "main": "server.js",
+  "author": "Shane Riley",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "false": "^0.0.4",
+    "jimp": "^0.22.8"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}
