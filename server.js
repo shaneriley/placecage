@@ -23,6 +23,8 @@ const imageExts = ['gif', 'jpg', 'jpeg', 'png']
 
 const sourceImagePath = path.join(__dirname, 'images', 'source')
 const generatedImagePath = path.join(__dirname, 'images', 'generated')
+
+const radFaces = fs.readFileSync(path.join(__dirname, 'radfaces', 'radfaces.json'))
 const standardImages = domains.reduce((images, domain) => {
   const files = fs.readdirSync(path.join(sourceImagePath, domain))
   images[domain] = files.filter((file) => imageExts.includes(path.extname(file).replace(/^\./, '')))
@@ -65,14 +67,34 @@ const serveStylesheet = (res) => {
   res.end(css)
 }
 
+const radFacesJSON = (res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' })
+  res.end(radFaces)
+}
+
+const radFacesImage = (filename, res) => {
+  res.writeHead(200, { 'Content-Type': 'image/jpeg' })
+  res.end(fs.readFileSync(path.join(sourceImagePath, 'radfaces', filename)))
+}
+
 const server = http.createServer((req, res) => {
   console.log(`[HTTP GET]: ${req.url}`)
+
+  // Shared CSS
   if (/\.css$/.test(req.url)) {
     return serveStylesheet(res)
   }
+
+  // Use placecage as root
   if (req.url === '/') {
     return serveIndexFor('placecage', res)
   }
+
+  // Rad faces JSON
+  if (req.url === '/radfaces/radfaces.json') {
+    return radFacesJSON(res)
+  }
+
   const urlParts = req.url.replace(/^\//, '').split('/')
   const opts = {
     domain: 'placecage',
@@ -81,6 +103,10 @@ const server = http.createServer((req, res) => {
     gif: false,
   }
   const domain = urlParts[0]
+
+  if (domain === 'radfaces') {
+    return radFacesImage(urlParts[1], res)
+  }
 
   if (domains.includes(domain)) {
     opts.domain = domain
