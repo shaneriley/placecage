@@ -56,7 +56,9 @@ const getImagePath = ({ domain = 'placecage', gif = false, grayscale = false, cr
 }
 
 const serveIndexFor = (domain, res) => {
-  const index = fs.readFileSync(path.join(__dirname, domain, 'index.html'))
+  const filePath = path.join(__dirname, domain, 'index.html')
+  console.log(filePath)
+  const index = fs.readFileSync(filePath)
   res.writeHead(200, { 'Content-Type': 'text/html' })
   res.end(index)
 }
@@ -77,11 +79,12 @@ const radFacesImage = (filename, res) => {
   res.end(fs.readFileSync(path.join(sourceImagePath, 'radfaces', filename)))
 }
 
-const radFacesAsset = (filename, res) => {
-  console.log(filename)
-  const contentType = /css$/.test(filename) ? 'text/css' : 'image/png'
+const radFacesAsset = (pathParts, res) => {
+  const filePath = path.join(__dirname, 'radfaces', ...pathParts)
+  const contentType = /css$/.test(filePath) ? 'text/css' : 'image/png'
+  console.log(filePath)
   res.writeHead(200, { 'Content-Type': contentType })
-  res.end(fs.readFileSync(path.join(__dirname, filename)))
+  res.end(fs.readFileSync(filePath))
 }
 
 const server = http.createServer((req, res) => {
@@ -124,7 +127,7 @@ const server = http.createServer((req, res) => {
     if (/jpg$/.test(req.url)) {
       return radFacesImage(urlParts[0], res)
     }
-    return radFacesAsset(req.url, res)
+    return radFacesAsset(urlParts, res)
   }
 
   const [next] = urlParts
