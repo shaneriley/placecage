@@ -1,0 +1,118 @@
+<!-- https://web.archive.org/web/20210224204630/http://www.radfaces.com/ -->
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no,maximum-scale=1.0">
+    <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon-16x16.png">
+    <title>Rad Faces - F#ckin' rad ui faces for your comps!</title>
+    <meta content="rad faces, radfaces, 80s, 90s, nick, avatars, prototyping, design, ui, comps" name="keywords">
+    <meta content="F#ckin' rad ui faces for your comps!" name="description">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,600" rel="stylesheet" type="text/css">
+    <link href="/radfaces/normalize.css" rel="stylesheet"/>
+    <link href="/radfaces/application.css" rel="stylesheet"/>
+    <link href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css" rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  </head>
+    <section class="awesomeness">
+      <nav>
+        <div class="wrapper">
+          <div class="logo">
+            <img src="./images/radfaces.png"/>
+          </div>
+          <div class="share-links">
+            <span class="tweet-share">
+              <a class="twitter-share-button" data-text="F#ckin' rad ui faces for your comps! #ui, #design" data-url="https://placecage.vercel.app/radfaces/" data-via="shaneriley" href="https://twitter.com/share">Tweet</a>
+            </span>
+          </div>
+        </div>
+      </nav>
+
+      <article>
+        <div class="wrapper">
+          <p>
+            If you like making prototypes, need dem avatars,
+            <br>
+            and on that 80's early 90's tip, this shit is for you!
+          </p>
+          <a class="btn" target="_blank" href="/radfaces/radfaces.json">Download JSON</a>
+          <figure>
+            <a class="thumbnail" data-id="Pete">
+              <img alt="Pete Wrigley" title="Pete Wrigley" src="/radfaces/little-pete-wrigley.jpg"/>
+            </a>
+          </figure>
+        </div>
+      </article>
+
+      <footer>
+        <div class="wrapper">
+          All photos are curated by,
+          <a target="_blank" href="http://daniloquilaton.com/">Danilo K. Quilaton, Jr.</a>
+          <br>
+          Resurrected by <a target="_blank" href="http://shaneriley.com">Shane Riley</a>
+        </div>
+      </footer>
+
+      <div class="modal" id="Pete" style="display:none">
+        <div class="modal__content">
+        </div>
+        <a class="modal__close-btn">
+          <i class="ion-android-close"></i>
+        </a>
+      </div>
+    </section>
+
+    <template id="face">
+      <a class="thumbnail" data-id="{image}">
+        <img alt="{first_name} {last_name}" title="{first_name} {last_name}" src="/radfaces/{image}"/>
+      </a>
+    </template>
+
+    <template id="modal">
+      <img class="modal__logo" src="./images/radfaces-white.png"/>
+      <img class="modal__avatar" alt="{first_name} {last_name}" title="{first_name} {last_name}" src="/radfaces/{image}"/>
+      <h3>{first_name} {last_name}</h3>
+      <p>{location}</p>
+    </template>
+
+    <script>
+      $(function() {
+        // Twitter Widget
+        !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
+
+        let faces;
+        const $modal = $('.modal');
+        const closeModal = () => {
+          $modal.fadeToggle();
+          $('body').removeClass('modal--open');
+        };
+
+        // Modals
+        $('figure').on('click', '.thumbnail', function({ currentTarget }) {
+          const face = faces.find(({ image }) => image === currentTarget.dataset.id)
+          $modal.hide();
+          $modal.find('.modal__content').html(œmodal.replace(/\{(\w+)\}/g, (_, $1) => face[$1]))
+          $('body').addClass('modal--open');
+          $modal.fadeToggle();
+        });
+        $('.modal__close-btn').click(closeModal)
+        $(document).on( 'keydown', function(e) {
+          if (e.key === 'Escape') {
+            closeModal();
+          }
+        });
+
+        const œface = $('#face').html();
+        const œmodal = $('#modal').html();
+
+        fetch('/radfaces/radfaces.json').then((res) => res.json()).then((json) => {
+          faces = json;
+          $('figure').html(faces.map((face) => (
+            œface.replace(/\{(\w+)\}/g, (_, $1) => face[$1])
+          )));
+        });
+      });
+    </script>
+  </body>
+</html>

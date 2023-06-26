@@ -18,7 +18,7 @@ require('dotenv').config()
  * Return square image if only one dimension
  */
 
-const domains = ['placecage', 'fillmurray', 'stevensegallery']
+const domains = ['placecage', 'fillmurray', 'radfaces', 'stevensegallery']
 const imageExts = ['gif', 'jpg', 'jpeg', 'png']
 
 const sourceImagePath = path.join(__dirname, 'images', 'source')
@@ -77,11 +77,18 @@ const radFacesImage = (filename, res) => {
   res.end(fs.readFileSync(path.join(sourceImagePath, 'radfaces', filename)))
 }
 
+const radFacesAsset = (filename, res) => {
+  console.log(filename)
+  const contentType = /css$/.test(filename) ? 'text/css' : 'image/png'
+  res.writeHead(200, { 'Content-Type': contentType })
+  res.end(fs.readFileSync(path.join(__dirname, filename)))
+}
+
 const server = http.createServer((req, res) => {
   console.log(`[HTTP GET]: ${req.url}`)
 
   // Shared CSS
-  if (/\.css$/.test(req.url)) {
+  if (/global\.css$/.test(req.url)) {
     return serveStylesheet(res)
   }
 
@@ -104,10 +111,6 @@ const server = http.createServer((req, res) => {
   }
   const domain = urlParts[0]
 
-  if (domain === 'radfaces') {
-    return radFacesImage(urlParts[1], res)
-  }
-
   if (domains.includes(domain)) {
     opts.domain = domain
     urlParts.shift()
@@ -115,6 +118,13 @@ const server = http.createServer((req, res) => {
 
   if (!urlParts[0]) {
     return serveIndexFor(domain, res)
+  }
+
+  if (domain === 'radfaces') {
+    if (/jpg$/.test(req.url)) {
+      return radFacesImage(urlParts[0], res)
+    }
+    return radFacesAsset(req.url, res)
   }
 
   const [next] = urlParts
